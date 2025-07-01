@@ -5,6 +5,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 function App() {
   const [vapi, setVapi] = useState<Vapi | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [finalScore, setFinalScore] = useState<number | undefined>(undefined);
   const [transcript, setTranscript] = useState<Array<{ role: string; text: string }>>([]);
@@ -18,12 +19,14 @@ function App() {
     instance.on('call-start', () => {
       console.log('✅ Call started');
       setIsConnected(true);
+      setIsLoading(false);
     });
 
     instance.on('call-end', () => {
       console.log('🛑 Call ended');
       setIsConnected(false);
       setIsSpeaking(false);
+      setIsLoading(false);
     });
 
     instance.on('speech-start', () => {
@@ -70,6 +73,7 @@ function App() {
 
     instance.on('error', (error) => {
       console.error('❗ Vapi error:', error);
+      setIsLoading(false);
     });
 
     return () => {
@@ -81,6 +85,7 @@ function App() {
   const startCall = () => {
     if (vapi) {
       console.log('📞 Starting call...');
+      setIsLoading(true);
       vapi.start('a3f9406b-f3d2-40ec-9239-772cd6c6b8b9');
     }
   };
@@ -145,12 +150,31 @@ function App() {
           )}
           <br />
           {!isConnected ? (
-            <button
-              onClick={startCall}
-              className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Start Voice Assessment
-            </button>
+            <div>
+              <button
+                onClick={startCall}
+                disabled={isLoading}
+                className={`w-full py-3 px-6 rounded-lg transition-colors ${
+                  isLoading 
+                    ? 'bg-gray-400 text-white cursor-not-allowed' 
+                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                }`}
+              >
+                {isLoading ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Please Wait! Connecting Best AI Agent ...
+                  </div>
+                ) : (
+                  'Start Voice Assessment'
+                )}
+              </button>
+              {isLoading && (
+                <div className="text-center text-sm text-gray-600 mt-3">
+                  It might take 15-20 sec to connect the best AI agent
+                </div>
+              )}
+            </div>
           ) : (
             <div>
               <div className="flex justify-between items-center mb-4">
