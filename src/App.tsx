@@ -368,7 +368,7 @@ function App() {
       {/* Bottom Right - Chat */}
       <div
         style={{
-          height: '75vh',
+          height: '80vh',
           position: 'fixed',
           bottom: '20px',
           right: '20px',
