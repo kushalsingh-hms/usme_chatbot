@@ -174,13 +174,35 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex">
-      {/* Left side - Controls */}
-      <div className="flex-1 flex items-center justify-center">
-        <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Background Image */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `url('/assests/background.png')`,
+        }}
+      >
+        {/* Overlay for better text readability */}
+        <div className="absolute inset-0 bg-black bg-opacity-20"></div>
+      </div>
+
+      {/* R-SYSTEMS Logo */}
+      <div className="absolute top-8 left-8 z-10">
+        <img 
+          src="/assests/logo.png" 
+          alt="R-SYSTEMS" 
+          className="h-12 w-auto"
+        />
+      </div>
+
+      {/* Main Content */}
+      <div className="relative z-10 min-h-screen flex">
+        {/* Left side - Controls */}
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center max-w-lg w-full px-8">
           {finalScore !== undefined && (
-            <div className="mb-6">
-              <h2 className="text-xl font-bold text-center mb-4">PHQ-9 Assessment Results</h2>
+            <div className="mb-6 bg-white bg-opacity-95 p-6 rounded-xl shadow-lg">
+              <h2 className="text-xl font-bold text-center mb-4 text-gray-800">PHQ-9 Assessment Results</h2>
               <div className="flex flex-col items-center">
                 <div className="w-64 h-64 mb-4">
                   <ResponsiveContainer width="100%" height="100%">
@@ -224,16 +246,38 @@ function App() {
               </div>
             </div>
           )}
-          <br />
+          
+          {!finalScore && !isConnected && (
+            <div className="mb-8">
+              {/* Chatbot Icon */}
+              <div className="flex justify-center mb-6">
+                <div className="bg-white bg-opacity-20 p-4 rounded-full backdrop-blur-sm border border-white border-opacity-30">
+                  <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+                    <circle cx="9" cy="9" r="1.5"/>
+                    <circle cx="15" cy="9" r="1.5"/>
+                    <path d="M8 13.5h8v1H8z"/>
+                  </svg>
+                </div>
+              </div>
+              
+              {/* Greeting Message */}
+              <div className="text-center mb-8">
+                {/* <h1 className="text-3xl font-bold text-white mb-4">Good evening!</h1> */}
+                <p className="text-xl text-white text-opacity-90">Can I help you with anything?</p>
+              </div>
+            </div>
+          )}
+          
           {!isConnected ? (
             <div>
               <button
                 onClick={startCall}
                 disabled={isLoading}
-                className={`w-full py-3 px-6 rounded-lg transition-colors ${
+                className={`w-full py-4 px-8 rounded-xl text-lg font-semibold transition-all duration-300 transform hover:scale-105 ${
                   isLoading 
                     ? 'bg-gray-400 text-white cursor-not-allowed' 
-                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                    : 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg hover:shadow-xl'
                 }`}
               >
                 {isLoading ? (
@@ -246,7 +290,7 @@ function App() {
                 )}
               </button>
               {isLoading && (
-                <div className="text-center text-sm text-gray-600 mt-3">
+                <div className="text-center text-sm text-white text-opacity-90 mt-4 bg-black bg-opacity-30 p-3 rounded-lg backdrop-blur-sm">
                   It might take 15-20 sec to connect the best AI agent
                 </div>
               )}
@@ -278,17 +322,17 @@ function App() {
               )}
             </div>
           ) : (
-            <div>
+            <div className="bg-white bg-opacity-95 p-6 rounded-xl shadow-lg backdrop-blur-sm">
               <div className="flex justify-between items-center mb-4">
-                <div className="flex items-center gap-2">
-                  <div className={`w-3 h-3 rounded-full ${isSpeaking ? 'bg-red-500 animate-pulse' : 'bg-green-500'}`}></div>
-                  <span className="text-sm text-gray-600">
+                <div className="flex items-center gap-3">
+                  <div className={`w-4 h-4 rounded-full ${isSpeaking ? 'bg-red-500 animate-pulse' : 'bg-green-500'}`}></div>
+                  <span className="text-lg font-medium text-gray-800">
                     {isSpeaking ? 'Assistant Speaking...' : 'Listening...'}
                   </span>
                 </div>
                 <button
                   onClick={endCall}
-                  className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
+                  className="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition-all duration-300 font-semibold hover:scale-105"
                 >
                   End Call
                 </button>
@@ -317,37 +361,37 @@ function App() {
               )}
             </div>
           )}
+          </div>
         </div>
       </div>
 
-      {/* Right side - Chat */}
+      {/* Bottom Right - Chat */}
       <div
         style={{
-          height: '100vh',
-          overflowY: 'scroll',
+          height: '75vh',
           position: 'fixed',
-          right: 0,
-          top: 0,
+          bottom: '20px',
+          right: '20px',
           zIndex: 1000,
         }}
-        className="w-96 bg-white shadow-xl border-l border-gray-200"
+        className="w-80 bg-white bg-opacity-20 shadow-2xl border border-white border-opacity-30 backdrop-blur-lg rounded-xl"
       >
         <div className="h-full flex flex-col">
-          <div className="bg-gray-50 p-4 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-800">Conversation</h3>
+          <div className="bg-white bg-opacity-30 p-3 border-b border-white border-opacity-20 rounded-t-xl backdrop-blur-sm">
+            <h3 className="text-sm font-semibold text-white">Conversation</h3>
           </div>
-          <div className="flex-1 overflow-y-auto p-4">
+          <div className="flex-1 overflow-y-auto p-3">
             {transcript.length === 0 ? (
-              <p className="text-gray-500 text-center">Conversation will appear here...</p>
+              <p className="text-white text-opacity-70 text-center text-sm">Conversation will appear here...</p>
             ) : (
               transcript.map((msg, i) => (
-                <div key={i} className="mb-4">
+                <div key={i} className="mb-3">
                   <div className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                     <div
-                      className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                      className={`max-w-xs px-3 py-2 rounded-lg text-sm ${
                         msg.role === 'user'
-                          ? 'bg-blue-500 text-white rounded-br-none'
-                          : 'bg-gray-200 text-gray-800 rounded-bl-none'
+                          ? 'bg-blue-500 bg-opacity-80 text-white rounded-br-none backdrop-blur-sm'
+                          : 'bg-white bg-opacity-80 text-gray-800 rounded-bl-none backdrop-blur-sm'
                       }`}
                     >
                       <div className="text-xs opacity-75 mb-1">{msg.role === 'user' ? 'You' : 'Assistant'}</div>
