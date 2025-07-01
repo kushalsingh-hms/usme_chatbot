@@ -9,6 +9,39 @@ function App() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [finalScore, setFinalScore] = useState<number | undefined>(undefined);
   const [transcript, setTranscript] = useState<Array<{ role: string; text: string }>>([]);
+  const [audioError, setAudioError] = useState<string | null>(null);
+  const [audioInitialized, setAudioInitialized] = useState(false);
+
+  // Initialize audio context for Windows compatibility
+  const initializeAudio = async () => {
+    try {
+      // Create audio context to ensure audio is properly initialized
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      
+      // Resume audio context if it's suspended (common on Windows)
+      if (audioContext.state === 'suspended') {
+        await audioContext.resume();
+      }
+      
+      setAudioInitialized(true);
+      setAudioError(null);
+      console.log('🔊 Audio context initialized successfully');
+      
+      // Test audio playback capability
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      gainNode.gain.value = 0; // Silent test
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      oscillator.start();
+      oscillator.stop(audioContext.currentTime + 0.1);
+      
+      audioContext.close();
+    } catch (error) {
+      console.error('❗ Audio initialization failed:', error);
+      setAudioError('Audio initialization failed. Please check your audio settings.');
+    }
+  };
 
   useEffect(() => {
     const instance = new Vapi('25179bc7-b44c-4c1e-b701-2bf1f9a77bd1');
@@ -20,6 +53,7 @@ function App() {
       console.log('✅ Call started');
       setIsConnected(true);
       setIsLoading(false);
+      setAudioError(null);
     });
 
     instance.on('call-end', () => {
@@ -32,6 +66,7 @@ function App() {
     instance.on('speech-start', () => {
       console.log('🗣️ Assistant started speaking');
       setIsSpeaking(true);
+      setAudioError(null); // Clear any audio errors when speech starts
     });
 
     instance.on('speech-end', () => {
@@ -74,6 +109,19 @@ function App() {
     instance.on('error', (error) => {
       console.error('❗ Vapi error:', error);
       setIsLoading(false);
+      
+      // Enhanced error handling for Windows audio issues
+      const errorMessage = error?.message || error?.toString() || 'Unknown error';
+      if (errorMessage.toLowerCase().includes('audio') || 
+          errorMessage.toLowerCase().includes('microphone') ||
+          errorMessage.toLowerCase().includes('media')) {
+        setAudioError('Audio/Microphone error detected. Please check your audio settings and permissions.');
+      } else if (errorMessage.toLowerCase().includes('connection') ||
+                errorMessage.toLowerCase().includes('network')) {
+        setAudioError('Connection error. Please check your internet connection.');
+      } else {
+        setAudioError(`Error: ${errorMessage}`);
+      }
     });
 
     return () => {
@@ -82,11 +130,39 @@ function App() {
     };
   }, []);
 
-  const startCall = () => {
+  const startCall = async () => {
     if (vapi) {
-      console.log('📞 Starting call...');
-      setIsLoading(true);
-      vapi.start('a3f9406b-f3d2-40ec-9239-772cd6c6b8b9');
+      try {
+        console.log('📞 Starting call...');
+        setIsLoading(true);
+        setAudioError(null);
+        
+        // Initialize audio context for Windows compatibility
+        if (!audioInitialized) {
+          await initializeAudio();
+        }
+        
+        // Start the call
+        vapi.start('a3f9406b-f3d2-40ec-9239-772cd6c6b8b9');
+        
+        // Set a timeout to check if speech starts (Windows audio detection)
+        const speechTimeout = setTimeout(() => {
+          if (isConnected && !isSpeaking) {
+            console.warn('⚠️ No speech detected after 30 seconds - potential Windows audio issue');
+            setAudioError('No audio detected. If you can\'t hear the assistant, try refreshing the page or checking your audio settings.');
+          }
+        }, 30000);
+        
+        // Clear timeout when speech starts or call ends
+        const clearTimeoutOnSpeech = () => clearTimeout(speechTimeout);
+        vapi.on('speech-start', clearTimeoutOnSpeech);
+        vapi.on('call-end', clearTimeoutOnSpeech);
+        
+      } catch (error) {
+        console.error('❗ Failed to start call:', error);
+        setIsLoading(false);
+        setAudioError('Failed to start call. Please try again.');
+      }
     }
   };
 
@@ -174,6 +250,32 @@ function App() {
                   It might take 15-20 sec to connect the best AI agent
                 </div>
               )}
+              {audioError && (
+                <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0">
+                      <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <h3 className="text-sm font-medium text-yellow-800">Audio Issue Detected</h3>
+                      <div className="mt-1 text-sm text-yellow-700">{audioError}</div>
+                      <div className="mt-2">
+                        <button
+                          onClick={() => {
+                            setAudioError(null);
+                            initializeAudio();
+                          }}
+                          className="text-sm bg-yellow-100 text-yellow-800 px-3 py-1 rounded hover:bg-yellow-200 transition-colors"
+                        >
+                          Try Fix Audio
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <div>
@@ -191,6 +293,28 @@ function App() {
                   End Call
                 </button>
               </div>
+              {audioError && (
+                <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0">
+                      <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <h3 className="text-sm font-medium text-red-800">Audio Not Working?</h3>
+                      <div className="mt-1 text-sm text-red-700">{audioError}</div>
+                      <div className="mt-2 text-xs text-red-600">
+                        <strong>Windows troubleshooting:</strong>
+                        <br />• Check speaker volume and ensure it's not muted
+                        <br />• Try a different browser (Edge, Firefox)
+                        <br />• Refresh the page and try again
+                        <br />• Check Windows audio settings
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
