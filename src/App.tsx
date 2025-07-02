@@ -286,7 +286,7 @@ function App() {
                     Please Wait! Connecting Best AI Agent ...
                   </div>
                 ) : (
-                  'Start Voice Assessment'
+                  'USME ordering system'
                 )}
               </button>
               {isLoading && (
