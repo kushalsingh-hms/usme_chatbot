@@ -264,6 +264,7 @@ function App() {
               {/* Greeting Message */}
               <div className="text-center mb-8">
                 {/* <h1 className="text-3xl font-bold text-white mb-4">Good evening!</h1> */}
+                <p className="text-xs text-white text-opacity-90"></p>
                 <p className="text-xl text-white text-opacity-90">Can I help you with anything?</p>
               </div>
             </div>
