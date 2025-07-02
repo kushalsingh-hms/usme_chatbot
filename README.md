@@ -42,4 +42,4 @@ npm start
 
 ## Note
 
-This assessment is not a diagnosis. If you're experiencing symptoms of depression, please consult with a healthcare professional. 
+This assessment is not a diagnosis. If you're experiencing symptoms of depression, please consult with a healthcare professional. # usme_chatbot
