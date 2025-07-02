@@ -202,7 +202,7 @@ function App() {
           <div className="text-center max-w-lg w-full px-8">
           {finalScore !== undefined && (
             <div className="mb-6 bg-white bg-opacity-95 p-6 rounded-xl shadow-lg">
-              <h2 className="text-xl font-bold text-center mb-4 text-gray-800">PHQ-9 Assessment Results</h2>
+              <h2 className="text-xl font-bold text-center mb-4 text-gray-800">USME Assessment Results</h2>
               <div className="flex flex-col items-center">
                 <div className="w-64 h-64 mb-4">
                   <ResponsiveContainer width="100%" height="100%">
