@@ -44,7 +44,7 @@ function App() {
   };
 
   useEffect(() => {
-    const instance = new Vapi('25179bc7-b44c-4c1e-b701-2bf1f9a77bd1');
+    const instance = new Vapi('09eed585-d93a-4af8-940b-b8e742d5710e');
     setVapi(instance);
 
     console.log('✅ Vapi instance initialized');
@@ -143,7 +143,7 @@ function App() {
         }
         
         // Start the call
-        vapi.start('a3f9406b-f3d2-40ec-9239-772cd6c6b8b9');
+        vapi.start('748a009d-05cb-4dcd-bb39-111e7427cc2a');
         
         // Set a timeout to check if speech starts (Windows audio detection)
         const speechTimeout = setTimeout(() => {
