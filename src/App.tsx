@@ -255,7 +255,7 @@ function App() {
             </div>
           )}
           
-          {!finalScore && !isConnected && (
+          {!finalScore && !isConnected && !isLoading && (
             <div className="mb-8">
               {/* Chatbot Icon */}
               <div className="flex justify-center mb-6">
@@ -270,7 +270,7 @@ function App() {
               </div>
               
               {/* Greeting Message */}
-              <div className="text-center mb-8">
+              <div className="text-center mb-8 mt-20">
                 {/* <h1 className="text-3xl font-bold text-white mb-4">Good evening!</h1> */}
                 <p className="text-xl text-white text-opacity-90">Can I help you with anything?</p>
               </div>
