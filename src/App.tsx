@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Vapi from '@vapi-ai/web';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
@@ -11,6 +11,7 @@ function App() {
   const [transcript, setTranscript] = useState<Array<{ role: string; text: string }>>([]);
   const [audioError, setAudioError] = useState<string | null>(null);
   const [audioInitialized, setAudioInitialized] = useState(false);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
   // Initialize audio context for Windows compatibility
   const initializeAudio = async () => {
@@ -129,6 +130,13 @@ function App() {
       instance.stop();
     };
   }, []);
+
+  // Auto-scroll to bottom when transcript updates
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [transcript]);
 
   const startCall = async () => {
     if (vapi) {
@@ -380,7 +388,7 @@ function App() {
           <div className="bg-white bg-opacity-30 p-3 border-b border-white border-opacity-20 rounded-t-xl backdrop-blur-sm">
             <h3 className="text-sm font-semibold text-white">Conversation</h3>
           </div>
-          <div className="flex-1 overflow-y-auto p-3">
+          <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-3">
             {transcript.length === 0 ? (
               <p className="text-white text-opacity-70 text-center text-sm">Conversation will appear here...</p>
             ) : (
